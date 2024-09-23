@@ -16,7 +16,7 @@ from packaging import version
 VERSION = version.Version("1.0")
 IP_API = "https://api.ipify.org/?format=json"
 
-LATEST_RELEASE_API = ""
+LATEST_RELEASE_API = "https://github.com/RoggersOgao/proxyGhost.git"
 
 proxy_url_pattern = re.compile(r"^socks5://[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+@[a-zA-Z0-9_.-]+:\d+$")
 
@@ -160,7 +160,7 @@ def check_update():
             choice = input(bcolors.BOLD + "Would you like to download latest version and build from Git repo? [Y/n]" + bcolors.ENDC).lower()
             if choice in {'yes', 'y', 'ye', ''}:
                 try:
-                    os.system('cd /tmp && git clone  https://github.com/RoggersOgao/proxyghost')
+                    os.system('cd /tmp && git clone https://github.com/RoggersOgao/proxyGhost.git')
                     os.system('cd /tmp/proxyghost && sudo ./proxybuild.sh')
                 except Exception as e:
                     print(f"Error: {e}")
