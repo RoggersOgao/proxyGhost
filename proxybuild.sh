@@ -11,10 +11,55 @@ install_apt_package() {
     sudo apt install -y "$1"
 }
 
-# Function to install required Python packages
+# Determine the Python version
+
 install_python_packages() {
-    echo "Installing required packages: stem, requests, cython..."
-    pip3 install -v stem requests cython
+    # Get the Python version
+    PYTHON_VERSION=$(python3 --version | cut -d ' ' -f2)
+
+    # Validate the Python version
+    if [ -z "$PYTHON_VERSION" ]; then
+        echo "Error: Unable to determine Python version."
+        return 1
+    fi
+
+    # Print the Python version
+    echo "Python version: $PYTHON_VERSION"
+
+    # Remove the EXTERNALLY-MANAGED file
+    if [ -f "/usr/lib/python${PYTHON_VERSION:0:4}/EXTERNALLY-MANAGED" ]; then
+        echo "Removing /usr/lib/python${PYTHON_VERSION:0:4}/EXTERNALLY-MANAGED file..."
+        sudo rm /usr/lib/python${PYTHON_VERSION:0:4}/EXTERNALLY-MANAGED
+    else
+        echo "Warning: /usr/lib/python${PYTHON_VERSION:0:4}/EXTERNALLY-MANAGED file not found."
+    fi
+
+    # Function to install required Python packages
+    echo "Installing required packages: python3-stem, python3-requests..."
+
+    # Install build-essential and python3-dev
+    if sudo apt-get install build-essential python3-dev; then
+        echo "build-essential and python3-dev installed successfully."
+    else
+        echo "Error: Failed to install build-essential and python3-dev."
+        return 1
+    fi
+
+    # Install python3-stem and python3-requests
+    if sudo apt install -y python3-stem python3-requests; then
+        echo "python3-stem and python3-requests installed successfully."
+    else
+        echo "Error: Failed to install python3-stem and python3-requests."
+        return 1
+    fi
+
+    # Install Cython using pip3
+    if pip3 install Cython; then
+        echo "Cython installed successfully."
+    else
+        echo "Error: Failed to install Cython."
+        return 1
+    fi
 }
 
 # Check and install Python 3
@@ -51,7 +96,7 @@ mkdir -p build
 cd build || { echo "Failed to enter build directory."; exit 1; }
 
 # Generate C code from Python script
-cython3 "../${PROXYGHOST_PY_FILE}" --embed -o proxyghost.c --verbose
+cython "../${PROXYGHOST_PY_FILE}" --embed -o proxyghost.c --verbose
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Generated C code"
 else

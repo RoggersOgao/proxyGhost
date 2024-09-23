@@ -6,19 +6,21 @@ import sys
 import getopt
 import requests
 import time
+import re
 import signal
 import json
+import packaging.version
 from stem import Signal
 from stem.control import Controller
 from packaging import version
 
 # Constants
-VERSION = version.Version("1.0")
+VERSION = "1.0.0"
 IP_API = "https://api.ipify.org/?format=json"
 
 LATEST_RELEASE_API = "https://github.com/RoggersOgao/proxyGhost.git"
 
-proxy_url_pattern = re.compile(r"^socks5://[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+@[a-zA-Z0-9_.-]+:\d+$")
+proxy_url_pattern = re.compile(r"^socks5://[a-zA-Z0-9]+:[a-zA-Z0-9]+@[a-zA-Z0-9.-]+:\d+$")
 
 
 while True:
@@ -48,19 +50,19 @@ def t():
 # Function to print logo
 def print_logo():
     print(bcolors["GREEN"] + bcolors["BOLD"])
-    print("""                                                                                                         
-        /$$$$$$$                                        /$$$$$$  /$$                            /$$    
-       | $$__  $$                                      /$$__  $$| $$                           | $$    
-       | $$  \ $$/$$$$$$  /$$$$$$  /$$   /$$ /$$   /$$| $$  \__/| $$$$$$$   /$$$$$$   /$$$$$$$/$$$$$$  
-       | $$$$$$$/$$__  $$/$$__  $$|  $$ /$$/| $$  | $$| $$ /$$$$| $$__  $$ /$$__  $$ /$$_____/_  $$_/  
-       | $$____/ $$  \__/ $$  \ $$ \  $$$$/ | $$  | $$| $$|_  $$| $$  \ $$| $$  \ $$|  $$$$$$  | $$    
-       | $$    | $$     | $$  | $$  >$$  $$ | $$  | $$| $$  \ $$| $$  | $$| $$  | $$ \____  $$ | $$ /$$
-       | $$    | $$     |  $$$$$$/ /$$/\  $$|  $$$$$$$|  $$$$$$/| $$  | $$|  $$$$$$/ /$$$$$$$/ |  $$$$/
-       |__/    |__/      \______/ |__/  \__/ \____  $$ \______/ |__/  |__/ \______/ |_______/   \___/  
-                                             /$$  | $$                                                 
-                                            |  $$$$$$/                                                 
-                                             \______/                                                                                                                              
-    {V} - Roggers Ogao 
+    print(r"""
+            /$$$$$$$                                        /$$$$$$  /$$                            /$$
+           | $$__  $$                                      /$$__  $$| $$                           | $$
+           | $$  \ $$/$$$$$$  /$$$$$$  /$$   /$$ /$$   /$$| $$  \__/| $$$$$$$   /$$$$$$   /$$$$$$$/$$$$$$
+           | $$$$$$$/$$__  $$/$$__  $$|  $$ /$$/| $$  | $$| $$ /$$$$| $$__  $$ /$$__  $$ /$$_____/_  $$_/
+           | $$____/ $$  \__/ $$  \ $$ \  $$$$/ | $$  | $$| $$|_  $$| $$  \ $$| $$  \ $$|  $$$$$$  | $$
+           | $$    | $$     | $$  | $$  >$$  $$ | $$  | $$| $$  \ $$| $$  | $$| $$  | $$ \____  $$ | $$ /$$
+           | $$    | $$     |  $$$$$$/ /$$/\  $$|  $$$$$$$|  $$$$$$/| $$  | $$|  $$$$$$/ /$$$$$$$/ |  $$$$/
+           |__/    |__/      \______/ |__/  \__/ \____  $$ \______/ |__/  |__/ \______/ |_______/   \___/
+                                                 /$$  | $$
+                                                |  $$$$$$/
+                                                 \______/
+        {V} - Roggers Ogao
     """.format(V=VERSION))
     print(bcolors["ENDC"])
 
@@ -110,17 +112,17 @@ def check_root():
 
 # Function to start proxy
 def start_proxy():
-    print("Setting up proxy...")    
+    print("Setting up proxy...")
     # Set up environment variables
     os.environ["HTTP_PROXY"] = PROXY_URL
-    os.environ["HTTPS_PROXY"] = PROXY_URL  
+    os.environ["HTTPS_PROXY"] = PROXY_URL
     # Set up iptables rules (optional)
     iptables_rules = """
     iptables -F
-    iptables -t nat -F    
+    iptables -t nat -F
     iptables -t nat -A OUTPUT -p tcp --syn -j REDIRECT --to-ports 8080
     """
-    os.system(iptables_rules)  
+    os.system(iptables_rules)
     print("Proxy setup complete!")
     print("CURRENT IP: " + ip())
 
@@ -151,6 +153,7 @@ def stop_proxy():
     print(" CURRENT IP: " + bcolors["GREEN"] + ip() + bcolors["ENDC"])
 
 # Function to check for update
+
 def check_update():
     print(t() + ' Checking for update...')
     try:
@@ -160,10 +163,10 @@ def check_update():
         new_version = json_data["tag_name"][1:]
         print(new_version)
         if packaging.version.parse(new_version) > packaging.version.parse(VERSION):
-            print(t() + bcolors.GREEN + ' New update available!' + bcolors.ENDC)
-            print(t() + ' Your current ProxyGhost version : ' + bcolors.GREEN + VERSION + bcolors.ENDC)
-            print(t() + ' Latest ProxyGhost version available : ' + bcolors.GREEN + new_version + bcolors.ENDC)
-            choice = input(bcolors.BOLD + "Would you like to download latest version and build from Git repo? [Y/n]" + bcolors.ENDC).lower()
+            print(t() + bcolors["GREEN"] + ' New update available!' + bcolors["ENDC"])
+            print(t() + ' Your current ProxyGhost version : ' + bcolors["GREEN"] + VERSION + bcolors["ENDC"])
+            print(t() + ' Latest ProxyGhost version available : ' + bcolors["GREEN"] + new_version + bcolors["ENDC"])
+            choice = input(bcolors["BOLD"] + "Would you like to download latest version and build from Git repo? [Y/n]" + bcolors["ENDC"]).lower()
             if choice in {'yes', 'y', 'ye', ''}:
                 try:
                     os.system('cd /tmp && git clone https://github.com/RoggersOgao/proxyGhost.git')
